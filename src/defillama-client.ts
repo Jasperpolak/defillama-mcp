@@ -5,8 +5,8 @@ export class DefiLlamaClient {
     const url = `${BASE_URLS[section]}${path}`;
     const res = await fetch(url);
     if (!res.ok) {
-      const body = await res.text().catch(() => '');
-      throw new Error(`DeFi Llama API error ${res.status} for ${url}: ${body}`);
+      console.error(`DeFi Llama API error ${res.status} for ${url}`);
+      throw new Error(`DeFi Llama API returned ${res.status} for ${path}`);
     }
     return res.json();
   }
