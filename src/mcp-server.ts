@@ -29,8 +29,11 @@ export async function startMCPServer() {
 async function startWithHttp(server: McpServer) {
   const app = express();
   app.use(express.json());
+  const allowedOrigins = process.env.CORS_ORIGIN
+    ? process.env.CORS_ORIGIN.split(',')
+    : [];
   app.use(cors({
-    origin: '*',
+    origin: allowedOrigins.length > 0 ? allowedOrigins : false,
     exposedHeaders: ['Mcp-Session-Id']
   }));
 
