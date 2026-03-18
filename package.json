@@ -1,0 +1,55 @@
+{
+  "name": "defillama-mcp",
+  "version": "1.0.0",
+  "description": "Model Context Protocol server for DeFi Llama API — TVL, prices, stablecoins, volumes, fees, and yields across 200+ chains",
+  "main": "build/index.js",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "start": "node build/index.js",
+    "start-http": "node build/index.js --http",
+    "dev": "node --loader ts-node/esm src/index.ts",
+    "dev-http": "node --loader ts-node/esm src/index.ts --http",
+    "debug": "npx @modelcontextprotocol/inspector -- node build/index.js",
+    "prepublishOnly": "npm run build"
+  },
+  "bin": {
+    "defillama-mcp": "./build/index.js"
+  },
+  "files": [
+    "build",
+    "README.md",
+    "LICENSE"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.10.1",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "5.1.0",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@modelcontextprotocol/inspector": "0.7.0",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.1",
+    "@types/node": "^22.13.10",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.8.2"
+  },
+  "keywords": [
+    "defillama",
+    "defi",
+    "tvl",
+    "model-context-protocol",
+    "mcp",
+    "blockchain"
+  ],
+  "author": "MANTRA",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}
