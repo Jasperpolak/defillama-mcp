@@ -6,8 +6,13 @@ export class DefiLlamaClient {
     const res = await fetch(url);
     if (!res.ok) {
       console.error(`DeFi Llama API error ${res.status} for ${url}`);
-      throw new Error(`DeFi Llama API returned ${res.status} for ${path}`);
+      throw new Error(`DeFi Llama API returned status ${res.status}`);
     }
-    return res.json();
+    try {
+      return await res.json();
+    } catch {
+      console.error(`DeFi Llama API returned non-JSON response for ${url}`);
+      throw new Error('DeFi Llama API returned an invalid response');
+    }
   }
 }
