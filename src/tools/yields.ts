@@ -1,6 +1,6 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { DefiLlamaClient } from '../defillama-client.js';
-import { chainSchema, jsonResult, errorResult } from './schemas.js';
+import { chainSchema, jsonResult, errorResult, infoResult } from './schemas.js';
 import { z } from 'zod';
 
 export function registerYieldTools(server: McpServer, client: DefiLlamaClient) {
@@ -21,6 +21,16 @@ export function registerYieldTools(server: McpServer, client: DefiLlamaClient) {
         }
         if (project) {
           pools = pools.filter((p: any) => p.project?.toLowerCase() === project.toLowerCase());
+        }
+        if (pools.length === 0) {
+          const filters = [chain && `chain "${chain}"`, project && `project "${project}"`].filter(Boolean).join(' and ');
+          return infoResult(
+            `No yield pools found for ${filters}. ` +
+            `DeFi Llama may not have yield pool data indexed for this ${chain ? 'chain' : 'project'} yet. ` +
+            `This typically means the yield adapters have not been added to DefiLlama's yield server. ` +
+            `You can verify by checking the protocol's TVL with get_protocol_tvl or get_protocols — ` +
+            `a protocol can have TVL indexed without yield data.`
+          );
         }
         return jsonResult(pools);
       } catch (error) {

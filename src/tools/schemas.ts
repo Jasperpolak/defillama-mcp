@@ -32,3 +32,9 @@ export function errorResult(error: unknown) {
     isError: true,
   };
 }
+
+export function infoResult(message: string) {
+  return {
+    content: [{ type: "text" as const, text: message }],
+  };
+}
