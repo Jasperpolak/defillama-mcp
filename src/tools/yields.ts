@@ -15,7 +15,8 @@ export function registerYieldTools(server: McpServer, client: DefiLlamaClient) {
     async ({ chain, project }) => {
       try {
         const data = await client.get('yields', '/pools');
-        let pools = data.data || data;
+        const allPools = data.data || data;
+        let pools = allPools;
         if (chain) {
           pools = pools.filter((p: any) => p.chain?.toLowerCase() === chain.toLowerCase());
         }
@@ -24,13 +25,34 @@ export function registerYieldTools(server: McpServer, client: DefiLlamaClient) {
         }
         if (pools.length === 0) {
           const filters = [chain && `chain "${chain}"`, project && `project "${project}"`].filter(Boolean).join(' and ');
-          return infoResult(
-            `No yield pools found for ${filters}. ` +
-            `DeFi Llama may not have yield pool data indexed for this ${chain ? 'chain' : 'project'} yet. ` +
-            `This typically means the yield adapters have not been added to DefiLlama's yield server. ` +
-            `You can verify by checking the protocol's TVL with get_protocol_tvl or get_protocols — ` +
-            `a protocol can have TVL indexed without yield data.`
-          );
+          let message = `No yield pools found for ${filters}.`;
+
+          // When filtering by project, check for similar slugs to help with typos/version suffixes
+          if (project) {
+            const slug = project.toLowerCase();
+            const similar = new Set<string>();
+            for (const p of allPools) {
+              const s = p.project?.toLowerCase();
+              if (s && s !== slug && (s.startsWith(slug) || slug.startsWith(s) || s.includes(slug))) {
+                similar.add(p.project);
+              }
+              if (similar.size >= 5) break;
+            }
+            if (similar.size > 0) {
+              message += ` Did you mean one of these project slugs? ${[...similar].join(', ')}`;
+            } else {
+              message += ` DeFi Llama may not have yield pool data indexed for this project yet.` +
+                ` You can verify by checking the protocol's TVL with get_protocol_tvl or get_protocols —` +
+                ` a protocol can have TVL indexed without yield data.`;
+            }
+          } else {
+            message += ` DeFi Llama may not have yield pool data indexed for this chain yet.` +
+              ` This typically means the yield adapters have not been added to DefiLlama's yield server.` +
+              ` You can verify by checking the protocol's TVL with get_protocol_tvl or get_protocols —` +
+              ` a protocol can have TVL indexed without yield data.`;
+          }
+
+          return infoResult(message);
         }
         return jsonResult(pools);
       } catch (error) {
