@@ -2,6 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 import { DefiLlamaClient } from './defillama-client.js';
+import { GeckoTerminalClient } from './gecko-terminal-client.js';
 import { registerAllTools } from './tools/index.js';
 import express, { Request, Response } from 'express';
 import cors from 'cors';
@@ -10,13 +11,14 @@ export async function startMCPServer() {
   const useHttp = process.argv.includes('--http') || process.argv.includes('-h');
 
   const client = new DefiLlamaClient();
+  const gtClient = new GeckoTerminalClient();
 
   const server = new McpServer({
     name: 'DeFi Llama MCP Server',
-    version: '1.0.0',
+    version: '1.2.0',
   });
 
-  registerAllTools(server, client);
+  registerAllTools(server, client, gtClient);
 
   if (useHttp) {
     await startWithHttp(server);

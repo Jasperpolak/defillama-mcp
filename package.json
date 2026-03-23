@@ -1,6 +1,6 @@
 {
   "name": "defillama-mcp",
-  "version": "1.0.0",
+  "version": "1.2.0",
   "description": "Model Context Protocol server for DeFi Llama API — TVL, prices, stablecoins, volumes, fees, and yields across 200+ chains",
   "main": "build/index.js",
   "type": "module",

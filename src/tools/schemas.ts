@@ -38,3 +38,77 @@ export function infoResult(message: string) {
     content: [{ type: "text" as const, text: message }],
   };
 }
+
+/** Find similar slugs using fuzzy substring matching. */
+export function findSimilarSlugs(
+  slug: string,
+  allItems: any[],
+  slugField: string = 'project',
+  maxSuggestions: number = 5,
+): string[] {
+  const needle = slug.toLowerCase();
+  const similar = new Set<string>();
+  for (const item of allItems) {
+    const s = item[slugField]?.toLowerCase();
+    if (s && s !== needle && (s.startsWith(needle) || needle.startsWith(s) || s.includes(needle))) {
+      similar.add(item[slugField]);
+    }
+    if (similar.size >= maxSuggestions) break;
+  }
+  return [...similar];
+}
+
+/** Flatten GeckoTerminal JSON:API response into clean objects. */
+export function flattenGeckoItem(item: any): any {
+  if (!item) return item;
+  const flat: any = { id: item.id, ...item.attributes };
+  if (item.relationships) {
+    for (const [key, rel] of Object.entries(item.relationships) as [string, any][]) {
+      if (rel?.data?.id) {
+        flat[`${key}_id`] = rel.data.id;
+      }
+    }
+  }
+  return flat;
+}
+
+export function flattenGeckoResponse(data: any): any {
+  if (!data) return data;
+  if (Array.isArray(data.data)) {
+    const items = data.data.map(flattenGeckoItem);
+    // Include sideloaded related objects if present
+    if (Array.isArray(data.included)) {
+      const included: Record<string, any> = {};
+      for (const inc of data.included) {
+        included[inc.id] = flattenGeckoItem(inc);
+      }
+      // Attach resolved token data to pool items
+      for (const item of items) {
+        for (const key of Object.keys(item)) {
+          if (key.endsWith('_id') && included[item[key]]) {
+            const resolvedKey = key.replace(/_id$/, '');
+            item[resolvedKey] = included[item[key]];
+          }
+        }
+      }
+    }
+    return items;
+  }
+  if (data.data && typeof data.data === 'object') {
+    const item = flattenGeckoItem(data.data);
+    if (Array.isArray(data.included)) {
+      const included: Record<string, any> = {};
+      for (const inc of data.included) {
+        included[inc.id] = flattenGeckoItem(inc);
+      }
+      for (const key of Object.keys(item)) {
+        if (key.endsWith('_id') && included[item[key]]) {
+          const resolvedKey = key.replace(/_id$/, '');
+          item[resolvedKey] = included[item[key]];
+        }
+      }
+    }
+    return item;
+  }
+  return data;
+}

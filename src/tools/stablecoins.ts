@@ -50,7 +50,7 @@ export function registerStablecoinTools(server: McpServer, client: DefiLlamaClie
 
   server.tool(
     "get_stablecoin_dominance",
-    "Get stablecoin dominance breakdown for a specific chain — shows which stablecoins hold the most market share.",
+    "Get current stablecoin dominance breakdown for a specific chain — shows which stablecoins hold the most market share. Returns a current snapshot only (not historical). For historical stablecoin data over time, use get_chain_stablecoins instead.",
     {
       chain: chainSchema,
     },

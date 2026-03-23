@@ -1,6 +1,6 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { DefiLlamaClient } from '../defillama-client.js';
-import { chainSchema, protocolSchema, jsonResult, errorResult } from './schemas.js';
+import { DefiLlamaClient, ApiError } from '../defillama-client.js';
+import { chainSchema, protocolSchema, jsonResult, errorResult, infoResult, findSimilarSlugs } from './schemas.js';
 import { z } from 'zod';
 
 export function registerTvlTools(server: McpServer, client: DefiLlamaClient) {
@@ -37,7 +37,7 @@ export function registerTvlTools(server: McpServer, client: DefiLlamaClient) {
 
   server.tool(
     "get_protocol_tvl",
-    "Get detailed protocol data including historical TVL broken down by chain, token composition, and metadata.",
+    "Get detailed protocol data including historical TVL broken down by chain, token composition, and metadata. If the slug doesn't match exactly, similar slugs will be suggested. Use get_protocols to discover valid protocol slugs.",
     {
       protocol: protocolSchema,
     },
@@ -46,6 +46,21 @@ export function registerTvlTools(server: McpServer, client: DefiLlamaClient) {
         const data = await client.get('main', `/protocol/${encodeURIComponent(protocol)}`);
         return jsonResult(data);
       } catch (error) {
+        if (error instanceof ApiError && error.status === 404) {
+          let message = `Protocol "${protocol}" was not found on DeFi Llama.`;
+          try {
+            const allProtocols = await client.get('main', '/protocols');
+            const similar = findSimilarSlugs(protocol, allProtocols, 'slug');
+            if (similar.length > 0) {
+              message += ` Did you mean one of these protocol slugs? ${similar.join(', ')}`;
+            } else {
+              message += ` Use get_protocols to see all available protocol slugs.`;
+            }
+          } catch {
+            message += ` Use get_protocols to see all available protocol slugs.`;
+          }
+          return infoResult(message);
+        }
         return errorResult(error);
       }
     }

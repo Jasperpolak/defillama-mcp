@@ -1,6 +1,6 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { DefiLlamaClient } from '../defillama-client.js';
-import { chainSchema, jsonResult, errorResult, infoResult } from './schemas.js';
+import { chainSchema, jsonResult, errorResult, infoResult, findSimilarSlugs } from './schemas.js';
 import { z } from 'zod';
 
 export function registerYieldTools(server: McpServer, client: DefiLlamaClient) {
@@ -29,17 +29,9 @@ export function registerYieldTools(server: McpServer, client: DefiLlamaClient) {
 
           // When filtering by project, check for similar slugs to help with typos/version suffixes
           if (project) {
-            const slug = project.toLowerCase();
-            const similar = new Set<string>();
-            for (const p of allPools) {
-              const s = p.project?.toLowerCase();
-              if (s && s !== slug && (s.startsWith(slug) || slug.startsWith(s) || s.includes(slug))) {
-                similar.add(p.project);
-              }
-              if (similar.size >= 5) break;
-            }
-            if (similar.size > 0) {
-              message += ` Did you mean one of these project slugs? ${[...similar].join(', ')}`;
+            const similar = findSimilarSlugs(project, allPools, 'project');
+            if (similar.length > 0) {
+              message += ` Did you mean one of these project slugs? ${similar.join(', ')}`;
             } else {
               message += ` DeFi Llama may not have yield pool data indexed for this project yet.` +
                 ` You can verify by checking the protocol's TVL with get_protocol_tvl or get_protocols —` +

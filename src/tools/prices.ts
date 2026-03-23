@@ -1,6 +1,6 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { DefiLlamaClient } from '../defillama-client.js';
-import { coinsSchema, timestampSchema, jsonResult, errorResult } from './schemas.js';
+import { coinsSchema, timestampSchema, jsonResult, errorResult, infoResult } from './schemas.js';
 import { z } from 'zod';
 
 export function registerPriceTools(server: McpServer, client: DefiLlamaClient) {
@@ -36,6 +36,15 @@ export function registerPriceTools(server: McpServer, client: DefiLlamaClient) {
           path += `?searchWidth=${encodeURIComponent(searchWidth)}`;
         }
         const data = await client.get('coins', path);
+        const returnedCoins = data?.coins;
+        if (!returnedCoins || (typeof returnedCoins === 'object' && Object.keys(returnedCoins).length === 0)) {
+          return infoResult(
+            `No price data found for the requested coins at timestamp ${timestamp}. ` +
+            `DeFi Llama's historical price lookback may be limited — older timestamps often return empty results. ` +
+            `Try a more recent timestamp, increase the searchWidth parameter (e.g., '1d' or '2d'), ` +
+            `or use get_price_chart for longer-term price trends.`
+          );
+        }
         return jsonResult(data);
       } catch (error) {
         return errorResult(error);
