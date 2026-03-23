@@ -9,6 +9,11 @@ export class GeckoTerminalClient {
       headers: { 'Accept': 'application/json' },
     });
     if (!res.ok) {
+      if (res.status === 429) {
+        throw new ApiError(429,
+          'GeckoTerminal rate limit reached (30 requests/minute on free tier). Wait a few seconds and try again.'
+        );
+      }
       console.error(`GeckoTerminal API error ${res.status} for ${url}`);
       throw new ApiError(res.status, `GeckoTerminal API returned status ${res.status}`);
     }

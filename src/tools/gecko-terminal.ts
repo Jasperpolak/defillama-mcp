@@ -21,9 +21,9 @@ export function registerGeckoTerminalTools(server: McpServer, client: GeckoTermi
     "Use this when DeFi Llama's get_dex_volumes has no data for a chain.",
     {
       network: networkSchema,
-      sort: z.enum(['h24_volume_usd_desc', 'h24_tx_count_desc', 'reserve_usd_desc'])
+      sort: z.enum(['h24_volume_usd_desc', 'h24_tx_count_desc'])
         .optional().default('h24_volume_usd_desc')
-        .describe("Sort pools by: 24h volume (default), 24h transaction count, or TVL."),
+        .describe("Sort pools by: 24h volume (default) or 24h transaction count."),
       page: z.number().optional().default(1).describe("Page number for pagination (default: 1)."),
     },
     async ({ network, sort, page }) => {
