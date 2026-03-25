@@ -53,8 +53,10 @@ export function registerGeckoTerminalTools(server: McpServer, client: GeckoTermi
 
   server.tool(
     "gt_get_pool_detail",
-    "Get detailed info for a specific DEX pool from GeckoTerminal including volume, TVL, fee tier, " +
-    "token prices, and transaction counts across multiple timeframes (5m, 15m, 30m, 1h, 6h, 24h).",
+    "Get info for a specific DEX pool from GeckoTerminal by address, including volume, TVL, fee tier, " +
+    "token prices, and transaction counts across multiple timeframes (5m, 15m, 30m, 1h, 6h, 24h). " +
+    "Returns similar data to gt_get_pools but for a single pool without pagination. " +
+    "For deeper pool data, use gt_get_pool_trades (recent trades) or gt_get_pool_ohlcv (price history).",
     {
       network: networkSchema,
       pool_address: z.string().describe("The pool contract address (e.g., '0x2d88...1f0f')."),

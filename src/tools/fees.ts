@@ -41,7 +41,7 @@ export function registerFeeTools(server: McpServer, client: DefiLlamaClient) {
         const data = await client.get('main', `/summary/fees/${encodeURIComponent(protocol)}`);
         return jsonResult(data);
       } catch (error) {
-        if (error instanceof ApiError && (error.status === 500 || error.status === 404)) {
+        if (error instanceof ApiError && (error.status === 400 || error.status === 404 || error.status === 500)) {
           let message = `Fee data is not available for protocol "${protocol}" on DeFi Llama. ` +
             `This protocol may not have a fee adapter configured in DeFi Llama yet.`;
           try {
